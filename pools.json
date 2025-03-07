@@ -1,0 +1,20 @@
+{
+  "pools": [
+    {
+      "name": "SW-9SETHC For PT on Morpho",
+      "platform": "Spectra V2",
+      "tvl": "$666",
+      "apy": "369%",
+      "base_apy": "396%",
+      "avg_apy_30d": "666%"
+    },
+    {
+      "name": "THWAR For PT on Tholgar",
+      "platform": "Spectra V2",
+      "tvl": "$15,154",
+      "apy": "763479%",
+      "base_apy": "763479%",
+      "avg_apy_30d": "2233%"
+    }
+  ]
+}
