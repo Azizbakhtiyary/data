@@ -5,7 +5,7 @@ def get_pool_data(pool_id):
     url = f"https://api.llama.fi/chart/{pool_id}"
     try:
         response = requests.get(url, timeout=10)
-        response.raise_for_status()  # Проверяем статус ответа
+        response.raise_for_status()
         return response.json()
     except requests.exceptions.HTTPError as http_err:
         if response.status_code == 404:
@@ -14,11 +14,11 @@ def get_pool_data(pool_id):
             print(f"❌ Ошибка HTTP для пула {pool_id}: {http_err}")
     except requests.exceptions.RequestException as req_err:
         print(f"❌ Ошибка сети для пула {pool_id}: {req_err}")
-    return None  # Возвращаем None для ошибочных пулов
+    return None
 
 def process_pools(input_file, output_file):
     with open(input_file, "r", encoding="utf-8") as f:
-        pools = json.load(f)["data"]
+        pools = json.load(f)  # Загружаем как список
 
     valid_pools = []
     
