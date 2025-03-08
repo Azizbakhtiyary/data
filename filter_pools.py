@@ -10,7 +10,7 @@ def filter_pools(input_file, output_file, min_apy=100):
 
     filtered_pools = [
         pool for pool in data["data"]
-        if isinstance(pool, dict) and isinstance(pool.get("apy"), (int, float)) and pool.get("apy", 0) >= min_apy
+        if isinstance(pool, dict) and isinstance(pool.get("apy"), (int, float)) and pool["apy"] >= 100:
     ]
 
     with open(output_file, "w", encoding="utf-8") as f:
