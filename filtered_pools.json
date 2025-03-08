@@ -34458,6 +34458,7 @@
         "volumeUsd1d": 615987.01827,
         "volumeUsd7d": 615987.01827,
         "apyBaseInception": null
+<<<<<<< HEAD
     },
     {
         "chain": "Base",
@@ -34495,5 +34496,7 @@
         "volumeUsd1d": 11421388.66082,
         "volumeUsd7d": null,
         "apyBaseInception": null
+=======
+>>>>>>> fe9d596 (Обновление логов в GitHub Actions и Telegram)
     }
 ]
