@@ -24,13 +24,13 @@ jobs:
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions"
-          git config --global user "action@github.com"
-          git add pools.json filtered_pools.json filter_log.txt best_pools.json
+          git config --global user.email "actions@github.com"
+          git add pools.json filtered_pools.json filter_log.txt
           git commit -m "Auto-update pools and filtered pools" || exit 0
           git push
 
       - name: Count Best Pools
-        run: echo "BEST_POOLS=$(jq length filtered_pools.json)" >> $GITHUB_ENV
+        run: echo "BEST_POOLS=$(cat filter_log.txt)" >> $GITHUB_ENV
 
       - name: Send Telegram Notification
         env:
