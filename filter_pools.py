@@ -1,6 +1,6 @@
 import json
 
-def filter_pools(input_file, output_file, min_apy=500):
+def filter_pools(input_file, output_file, min_apy=100):
     with open(input_file, "r", encoding="utf-8") as f:
         data = json.load(f)
     
