@@ -17,5 +17,10 @@ def filter_pools(input_file, output_file, min_apy=100):
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(filtered_pools, f, indent=4, ensure_ascii=False)
 
+    log_message = f"✅ Фильтрация завершена: осталось {len(filtered_pools)} пулов с APY >= {min_apy}%"
+    print(log_message)
+
+    with open("filter_log.txt", "w", encoding="utf-8") as log_file:
+        log_file.write(log_message)
 if __name__ == "__main__":
     filter_pools("pools.json", "filtered_pools.json")
