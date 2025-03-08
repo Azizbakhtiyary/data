@@ -28,11 +28,14 @@ jobs:
           git add pools.json filtered_pools.json filter_log.txt
           git commit -m "Auto-update pools and filtered pools" || exit 0
           git push
+          
+
+      - name: Count Best Pools
+        run: echo "BEST_POOLS=$(jq length best_pools.json)" >> $GITHUB_ENV
 
       - name: Send Telegram Notification
         if: always()
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="🚀 Обновление пулов завершено!%0A%0A✅ Фильтр: APY ≥ 100%, TVL ≥ $50K%0A📊 Количество пулов: $(cat filter_log.txt)" \
-            -d parse_mode="Markdown"
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            -d "chat_id=$TELEGRAM_CHAT_ID" \
+            -d "text=🚀 Обновление пулов завершено!\n\n✅ Фильтрация завершена: $BEST_POOLS пулов с APY ≥ 100% за 30 дней."
