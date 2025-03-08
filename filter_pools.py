@@ -1,38 +1,30 @@
-name: Update Pools Data
+import json
 
-on:
-  schedule:
-    - cron: '*/30 * * * *'  # Запуск каждые 30 минут
-  workflow_dispatch:  # Возможность запускать вручную
+def filter_pools(input_file, output_file, min_apy=100, min_tvl=50000):
+    with open(input_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-jobs:
-  update_data:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    if "data" not in data:
+        print("Ошибка: В файле нет ключа 'data'")
+        return
 
-      - name: Fetch latest pools data
-        run: curl -s "https://yields.llama.fi/pools" -o pools.json
+    filtered_pools = []
 
-      - name: Run filtering script
-        run: python filter_pools.py
+    for pool in data["data"]:
+        apy = pool.get("apy", 0)
+        tvl = pool.get("tvlUsd", 0)
 
-      - name: Log filtered pools count
-        run: cat filter_log.txt
+        if isinstance(apy, (int, float)) and isinstance(tvl, (int, float)) and apy >= min_apy and tvl >= min_tvl:
+            filtered_pools.append(pool)
 
-      - name: Commit and push changes
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add pools.json filtered_pools.json filter_log.txt
-          git commit -m "Auto-update pools and filtered pools" || exit 0
-          git push
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(filtered_pools, f, indent=4, ensure_ascii=False)
 
-      - name: Send Telegram Notification
-        if: always()
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="🚀 Обновление пулов завершено!%0A%0A✅ Фильтр: APY ≥ 100%, TVL ≥ $50K%0A📊 Количество пулов: $(cat filter_log.txt)" \
-            -d parse_mode="Markdown"
+    log_message = f"✅ Фильтрация завершена: {len(filtered_pools)} пулов с APY ≥ {min_apy}% и TVL ≥ ${min_tvl}"
+    print(log_message)
+
+    with open("filter_log.txt", "w", encoding="utf-8") as log_file:
+        log_file.write(log_message)
+
+if __name__ == "__main__":
+    filter_pools("pools.json", "filtered_pools.json")
