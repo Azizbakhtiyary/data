@@ -18,18 +18,18 @@ def get_pool_data(pool_id):
 
 def process_pools(input_file, output_file):
     with open(input_file, "r", encoding="utf-8") as f:
-        pools = json.load(f)  # Загружаем как список
+        pools = json.load(f)  # ✅ Исправлено: загружаем как список
 
     valid_pools = []
     
-    for pool in pools:
+    for pool in pools:  # ✅ Теперь pools — список
         pool_id = pool.get("id")
         if not pool_id:
             continue  # Пропускаем пулы без ID
 
         pool_data = get_pool_data(pool_id)
         if pool_data:
-            pool["historical_data"] = pool_data  # Добавляем исторические данные
+            pool["historical_data"] = pool_data  # Добавляем данные
             valid_pools.append(pool)
 
     with open(output_file, "w", encoding="utf-8") as f:
