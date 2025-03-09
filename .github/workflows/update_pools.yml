@@ -3,7 +3,7 @@ name: Update Pools Data
 on:
   schedule:
     - cron: '*/30 * * * *'  # Запуск каждые 30 минут
-  workflow_dispatch:  # Возможность запускать вручную
+  workflow_dispatch:  # Возможность запуска вручную
 
 jobs:
   update_data:
@@ -13,13 +13,18 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Fetch latest pools data
-        run: curl -s "https://yields.llama.fi/pools" -o pools.json
+        run: |
+          curl -s "https://yields.llama.fi/pools" -o pools.json
+          if [ ! -s pools.json ]; then
+            echo "❌ Ошибка: данные не загружены"
+            exit 1
+          fi
 
       - name: Run filtering script
         run: python filter_pools.py
 
-      - name: Log filtered pools count
-        run: cat filter_log.txt
+      - name: Extract filtered pools count
+        run: echo "BEST_POOLS=$(cat filter_log.txt)" >> $GITHUB_ENV
 
       - name: Commit and push changes
         run: |
@@ -29,9 +34,6 @@ jobs:
           git commit -m "Auto-update pools and filtered pools" || exit 0
           git push
 
-      - name: Count Best Pools
-        run: echo "BEST_POOLS=$(cat filter_log.txt)" >> $GITHUB_ENV
-
       - name: Send Telegram Notification
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -39,4 +41,4 @@ jobs:
         run: |
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
             -d "chat_id=$TELEGRAM_CHAT_ID" \
-            -d "text=🚀 Обновление пулов завершено!\n\n✅ Фильтрация завершена: $BEST_POOLS пулов с APY ≥ 100% за 30 дней."
+            -d "text=🚀 Обновление пулов завершено!\n\n✅ Фильтрация завершена: $BEST_POOLS"
