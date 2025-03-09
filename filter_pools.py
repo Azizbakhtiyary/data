@@ -1,41 +1,38 @@
 import json
-import requests
 
-def get_pool_data(pool_id):
-    url = f"https://api.llama.fi/chart/{pool_id}"
+def filter_pools(input_file, output_file, min_apy=100, min_tvl=50000):
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as http_err:
-        if response.status_code == 404:
-            print(f"⚠️ Пропуск пула {pool_id}: 404 Not Found")
-        else:
-            print(f"❌ Ошибка HTTP для пула {pool_id}: {http_err}")
-    except requests.exceptions.RequestException as req_err:
-        print(f"❌ Ошибка сети для пула {pool_id}: {req_err}")
-    return None
-
-def process_pools(input_file, output_file):
-    with open(input_file, "r", encoding="utf-8") as f:
-        pools = json.load(f)  # ✅ Исправлено: загружаем как список
-
-    valid_pools = []
+        with open(input_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        print(f"❌ Ошибка при загрузке {input_file}: {e}")
+        return
     
-    for pool in pools:  # ✅ Теперь pools — список
-        pool_id = pool.get("id")
-        if not pool_id:
-            continue  # Пропускаем пулы без ID
+    if not isinstance(data, list):  # Проверяем, что это список
+        print(f"❌ Ошибка: ожидался список пулов, получен {type(data)}")
+        return
 
-        pool_data = get_pool_data(pool_id)
-        if pool_data:
-            pool["historical_data"] = pool_data  # Добавляем данные
-            valid_pools.append(pool)
+    filtered_pools = []
+
+    for pool in data:
+        try:
+            apy = float(pool.get("apy", 0))  # Преобразуем в число
+            tvl = float(pool.get("tvlUsd", 0))
+
+            if apy >= min_apy and tvl >= min_tvl:
+                filtered_pools.append(pool)
+
+        except (ValueError, TypeError):
+            print(f"⚠️ Ошибка данных в пуле: {pool.get('id', 'неизвестный ID')} – пропускаем")
 
     with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(valid_pools, f, indent=4, ensure_ascii=False)
+        json.dump(filtered_pools, f, indent=4, ensure_ascii=False)
 
-    print(f"✅ Обработано пулов: {len(valid_pools)}")
+    log_message = f"✅ Фильтрация завершена: {len(filtered_pools)} пулов с APY ≥ {min_apy}% и TVL ≥ ${min_tvl}"
+    print(log_message)
+
+    with open("filter_log.txt", "w", encoding="utf-8") as log_file:
+        log_file.write(log_message)
 
 if __name__ == "__main__":
-    process_pools("filtered_pools.json", "valid_pools.json")
+    filter_pools("pools.json", "filtered_pools.json")
